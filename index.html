@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CineMatch AI - Personalized Movie Recommendations</title>
+    <style>
+        /* Global Styles */
+        :root {
+            --primary: #6a0dad;
+            --secondary: #9c27b0;
+            --dark: #1a1a2e;
+            --light: #f8f9fa;
+            --accent: #ff5722;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--dark);
+            color: var(--light);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        /* Header Styles */
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            padding: 20px 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .logo img {
+            height: 40px;
+        }
+        
+        .logo h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(to right, #fff, #e0e0e0);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 25px;
+        }
+        
+        nav a {
+            color: var(--light);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            padding: 5px 10px;
+            border-radius: 4px;
+        }
+        
+        nav a:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        /* Hero Section */
+        .hero {
+            background: url('https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80') no-repeat center center/cover;
+            height: 500px;
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+        
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+        }
+        
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            max-width: 600px;
+        }
+        
+        .hero h2 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            background: linear-gradient(to right, var(--secondary), var(--accent));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .hero p {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+        }
+        
+        .btn {
+            display: inline-block;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            color: white;
+            padding: 12px 30px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn-accent {
+            background: linear-gradient(to right, var(--accent), #ff7043);
+        }
+        
+        /* Recommendation Form */
+        .recommendation-form {
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 40px;
+            border-radius: 10px;
+            margin: 50px 0;
+            backdrop-filter: blur(10px);
+        }
+        
+        .form-title {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2rem;
+            color: var(--light);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border-radius: 5px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--light);
+            font-size: 1rem;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: var(--secondary);
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .genre-select {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .genre-select input[type="checkbox"] {
+            display: none;
+        }
+        
+        .genre-select label {
+            padding: 8px 15px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .genre-select input[type="checkbox"]:checked + label {
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            color: white;
+        }
+        
+        .slider-container {
+            margin-top: 15px;
+        }
+        
+        .slider {
+            width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.1);
+            outline: none;
+            -webkit-appearance: none;
+        }
+        
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--secondary);
+            cursor: pointer;
+        }
+        
+        .slider-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 5px;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        /* Results Section */
+        .results {
+            padding: 60px 0;
+        }
+        
+        .section-title {
+            text-align: center;
+            margin-bottom: 40px;
+            font-size: 2.2rem;
+        }
+        
+        .movie-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 30px;
+        }
+        
+        .movie-card {
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .movie-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .movie-poster {
+            width: 100%;
+            height: 350px;
+            object-fit: cover;
+        }
+        
+        .movie-info {
+            padding: 20px;
+        }
+        
+        .movie-title {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+        
+        .movie-meta {
+            display: flex;
+            justify-content: space-between;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+        
+        .movie-rating {
+            color: #ffc107;
+            font-weight: 600;
+        }
+        
+        .movie-description {
+            font-size: 0.95rem;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 15px;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        .watch-now {
+            display: inline-block;
+            width: 100%;
+            text-align: center;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 8px 0;
+            border-radius: 5px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .watch-now:hover {
+            background-color: var(--accent);
+        }
+        
+        /* AI Features Section */
+        .ai-features {
+            padding: 80px 0;
+            background: linear-gradient(135deg, rgba(106, 13, 173, 0.1), rgba(156, 39, 176, 0.1));
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+        
+        .feature-card {
+            background-color: rgba(255, 255, 255, 0.05);
+            padding: 30px;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: var(--secondary);
+        }
+        
+        .feature-title {
+            font-size: 1.4rem;
+            margin-bottom: 15px;
+        }
+        
+        /* Footer */
+        footer {
+            background-color: #0f0f1a;
+            padding: 50px 0 20px;
+        }
+        
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .footer-column h3 {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            color: var(--light);
+        }
+        
+        .footer-column ul {
+            list-style: none;
+        }
+        
+        .footer-column ul li {
+            margin-bottom: 10px;
+        }
+        
+        .footer-column a {
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .footer-column a:hover {
+            color: var(--light);
+            padding-left: 5px;
+        }
+        
+        .social-links {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .social-links a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+        
+        .social-links a:hover {
+            background-color: var(--secondary);
+            transform: translateY(-3px);
+        }
+        
+        .copyright {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.9rem;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 20px;
+            }
+            
+            nav ul {
+                gap: 15px;
+            }
+            
+            .hero h2 {
+                font-size: 2.2rem;
+            }
+            
+            .hero p {
+                font-size: 1rem;
+            }
+            
+            .recommendation-form {
+                padding: 20px;
+            }
+            
+            .section-title {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container header-content">
+            <div class="logo">
+                <img src="https://via.placeholder.com/40" alt="CineMatch AI Logo">
+                <h1>CineMatch AI</h1>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="#home">Home</a></li>
+                    <li><a href="#recommend">Get Recommendations</a></li>
+                    <li><a href="#how-it-works">How It Works</a></li>
+                    <li><a href="#about">About</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+        <div class="container hero-content">
+            <h2>Discover Your Perfect Movie Match</h2>
+            <p>Our advanced AI analyzes your preferences and mood to recommend films you'll love. No more endless scrolling - just perfect matches.</p>
+            <a href="#recommend" class="btn">Get Started</a>
+        </div>
+    </section>
+
+    <!-- Recommendation Form -->
+    <section class="container" id="recommend">
+        <div class="recommendation-form">
+            <h2 class="form-title">Tell Us What You Like</h2>
+            <form id="movie-form">
+                <div class="form-group">
+                    <label for="mood">How are you feeling today?</label>
+                    <select id="mood" class="form-control">
+                        <option value="">Select your mood</option>
+                        <option value="happy">Happy</option>
+                        <option value="sad">Sad</option>
+                        <option value="excited">Excited</option>
+                        <option value="relaxed">Relaxed</option>
+                        <option value="adventurous">Adventurous</option>
+                        <option value="thoughtful">Thoughtful</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Favorite Genres (Select up to 3)</label>
+                    <div class="genre-select">
+                        <input type="checkbox" id="action" name="genre" value="action">
+                        <label for="action">Action</label>
+                        
+                        <input type="checkbox" id="comedy" name="genre" value="comedy">
+                        <label for="comedy">Comedy</label>
+                        
+                        <input type="checkbox" id="drama" name="genre" value="drama">
+                        <label for="drama">Drama</label>
+                        
+                        <input type="checkbox" id="scifi" name="genre" value="scifi">
+                        <label for="scifi">Sci-Fi</label>
+                        
+                        <input type="checkbox" id="horror" name="genre" value="horror">
+                        <label for="horror">Horror</label>
+                        
+                        <input type="checkbox" id="romance" name="genre" value="romance">
+                        <label for="romance">Romance</label>
+                        
+                        <input type="checkbox" id="thriller" name="genre" value="thriller">
+                        <label for="thriller">Thriller</label>
+                        
+                        <input type="checkbox" id="fantasy" name="genre" value="fantasy">
+                        <label for="fantasy">Fantasy</label>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="era">Preferred Movie Era</label>
+                    <select id="era" class="form-control">
+                        <option value="">Any era</option>
+                        <option value="classic">Classic (pre-1970)</option>
+                        <option value="70s-80s">70s-80s</option>
+                        <option value="90s">90s</option>
+                        <option value="2000s">2000s</option>
+                        <option value="recent">Recent (2010+)</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="runtime">Preferred Movie Length</label>
+                    <div class="slider-container">
+                        <input type="range" min="60" max="240" value="120" class="slider" id="runtime">
+                        <div class="slider-labels">
+                            <span>Short (&lt;90min)</span>
+                            <span>Medium (90-150min)</span>
+                            <span>Long (&gt;150min)</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="rating">Minimum Rating</label>
+                    <select id="rating" class="form-control">
+                        <option value="0">Any rating</option>
+                        <option value="7">7+</option>
+                        <option value="8">8+</option>
+                        <option value="9">9+</option>
+                    </select>
+                </div>
+                
+                <button type="submit" class="btn btn-accent">Find My Matches</button>
+            </form>
+        </div>
+    </section>
+
+    <!-- Results Section (Initially hidden) -->
+    <section class="results" id="results" style="display: none;">
+        <div class="container">
+            <h2 class="section-title">Your Perfect Matches</h2>
+            <div class="movie-grid" id="movie-results">
+                <!-- Movie cards will be inserted here by JavaScript -->
+            </div>
+        </div>
+    </section>
+
+    <!-- AI Features Section -->
+    <section class="ai-features" id="how-it-works">
+        <div class="container">
+            <h2 class="section-title">How Our AI Matching Works</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🤖</div>
+                    <h3 class="feature-title">Advanced Neural Network</h3>
+                    <p>Our AI analyzes thousands of data points from your preferences and compares them with our extensive movie database to find hidden patterns.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">🧠</div>
+                    <h3 class="feature-title">Mood Detection</h3>
+                    <p>The system considers your current mood and suggests films that will complement or enhance how you're feeling.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">🎭</div>
+                    <h3 class="feature-title">Taste Profiling</h3>
+                    <p>We build a unique profile of your cinematic tastes that gets smarter with each recommendation you rate.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">🔍</div>
+                    <h3 class="feature-title">Deep Analysis</h3>
+                    <p>Beyond genres, we analyze themes, pacing, cinematography, and even musical scores to find perfect matches.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">📈</div>
+                    <h3 class="feature-title">Continuous Learning</h3>
+                    <p>Our system learns from your feedback to make increasingly accurate recommendations over time.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">👥</div>
+                    <h3 class="feature-title">Community Insights</h3>
+                    <p>We incorporate data from users with similar tastes to discover films you might otherwise miss.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer id="about">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-column">
+                    <h3>CineMatch AI</h3>
+                    <p>Using artificial intelligence to connect you with films you'll love since 2023.</p>
+                    <div class="social-links">
+                        <a href="#"><span>📱</span></a>
+                        <a href="#"><span>📘</span></a>
+                        <a href="#"><span>📸</span></a>
+                        <a href="#"><span>🐦</span></a>
+                    </div>
+                </div>
+                
+                <div class="footer-column">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="#home">Home</a></li>
+                        <li><a href="#recommend">Get Recommendations</a></li>
+                        <li><a href="#how-it-works">How It Works</a></li>
+                        <li><a href="#about">About Us</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-column">
+                    <h3>Resources</h3>
+                    <ul>
+                        <li><a href="#">Blog</a></li>
+                        <li><a href="#">Movie Database</a></li>
+                        <li><a href="#">API</a></li>
+                        <li><a href="#">Research</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-column">
+                    <h3>Support</h3>
+                    <ul>
+                        <li><a href="#">Help Center</a></li>
+                        <li><a href="#">Contact Us</a></li>
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Terms of Service</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="copyright">
+                <p>&copy; 2023 CineMatch AI. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // This would be replaced with actual API calls in a production environment
+        document.getElementById('movie-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Show results section
+            document.getElementById('results').style.display = 'block';
+            
+            // Scroll to results
+            document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+            
+            // Generate sample results (in a real app, this would come from an API)
+            const sampleMovies = [
+                {
+                    title: "The Grand Budapest Hotel",
+                    year: 2014,
+                    rating: 8.1,
+                    runtime: 99,
+                    genre: "Comedy, Drama",
+                    description: "The adventures of Gustave H, a legendary concierge at a famous hotel, and Zero Moustafa, the lobby boy who becomes his most trusted friend.",
+                    image: "https://m.media-amazon.com/images/M/MV5BMzM5NjUxOTEyMl5BMl5BanBnXkFtZTgwNjEyMDM0MDE@._V1_UX182_CR0,0,182,268_AL_.jpg"
+                },
+                {
+                    title: "Parasite",
+                    year: 2019,
+                    rating: 8.6,
+                    runtime: 132,
+                    genre: "Comedy, Drama, Thriller",
+                    description: "Greed and class discrimination threaten the newly formed symbiotic relationship between the wealthy Park family and the destitute Kim clan.",
+                    image: "https://m.media-amazon.com/images/M/MV5BYWZjMjk3ZTItODQ2ZC00NTY5LWE0ZDYtZTI3MjcwN2Q5NTVkXkEyXkFqcGdeQXVyODk4OTc3MTY@._V1_UX182_CR0,0,182,268_AL_.jpg"
+                },
+                {
+                    title: "Inception",
+                    year: 2010,
+                    rating: 8.8,
+                    runtime: 148,
+                    genre: "Action, Adventure, Sci-Fi",
+                    description: "A thief who steals corporate secrets through the use of dream-sharing technology is given the inverse task of planting an idea into the mind of a C.E.O.",
+                    image: "https://m.media-amazon.com/images/M/MV5BMjAxMzY3NjcxNF5BMl5BanBnXkFtZTcwNTI5OTM0Mw@@._V1_UX182_CR0,0,182,268_AL_.jpg"
+                },
+                {
+                    title: "The Shawshank Redemption",
+                    year: 1994,
+                    rating: 9.3,
+                    runtime: 142,
+                    genre: "Drama",
+                    description: "Two imprisoned men bond over a number of years, finding solace and eventual redemption through acts of common decency.",
+                    image: "https://m.media-amazon.com/images/M/MV5BMDFkYTc0MGEtZmNhMC00ZDIzLWFmNTEtODM1ZmRlYWMwMWFmXkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_UX182_CR0,0,182,268_AL_.jpg"
+                }
+            ];
+            
+            // Clear previous results
+            const resultsContainer = document.getElementById('movie-results');
+            resultsContainer.innerHTML = '';
+            
+            // Add new results
+            sampleMovies.forEach(movie => {
+                const movieCard = document.createElement('div');
+               
